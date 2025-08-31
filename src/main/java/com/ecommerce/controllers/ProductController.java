@@ -21,7 +21,7 @@ public class ProductController {
 
     private final ProductService productService;
     @PostMapping
-    @PreAuthorize("userRole=ROLE_ADMIN")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('INVENTORY_MANAGER')")
     public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request) {
         Product product = mapToProduct(request);
         Product created = productService.createProduct(product, request.categoryId());
@@ -47,6 +47,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('INVENTORY_MANAGER')")
     public ResponseEntity<Product> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductRequest request
@@ -57,12 +58,14 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> softDeleteProduct(@PathVariable Long id) {
         productService.softDeleteProduct(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}/permanent")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> hardDeleteProduct(@PathVariable Long id) {
         productService.hardDeleteProduct(id);
         return ResponseEntity.noContent().build();

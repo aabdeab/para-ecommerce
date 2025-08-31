@@ -39,6 +39,7 @@ public class JwtTokenServiceImpl implements JwtTokenService {
                 .subject(currentUser.getUsername())
                 .claim("userId", currentUser.getUserId())
                 .claim("authorities",currentUser.getAuthorities())
+                .claim("role", currentUser.user().getRole().name())
                 .claim("scope", scope)
                 .issuedAt(now)
                 .expiresAt(now.plus(jwtExpirationInMs, ChronoUnit.MILLIS))
@@ -72,5 +73,10 @@ public class JwtTokenServiceImpl implements JwtTokenService {
             log.error("[USER] : Error while trying to validate token", exception);
             throw new BadJwtException("Error while trying to validate token");
         }
+    }
+    @Override
+    public String getRoleFromToken(String token) {
+        Jwt jwtToken = jwtDecoder.decode(token);
+        return jwtToken.getClaim("role");
     }
 }

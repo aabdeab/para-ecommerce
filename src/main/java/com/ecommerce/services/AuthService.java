@@ -7,6 +7,7 @@ import com.ecommerce.DTOs.LoginRequestDTO;
 import com.ecommerce.exceptions.UserNotFoundException;
 import com.ecommerce.mappers.AuthMapper;
 import com.ecommerce.models.User;
+import com.ecommerce.models.UserRole;
 import com.ecommerce.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class AuthService {
     public String registerUser(CreateUserDTO dto) {
         User user = AuthMapper.fromDTO(dto);
         user.setPassword(passwordEncoder.encode(dto.password()));
+        user.setRole(UserRole.CUSTOMER);
         userRepository.save(user);
         log.info("[USER] : User created with id {}", user.getUserId());
         return login(AuthMapper.fromDto(dto));

@@ -33,4 +33,5 @@ public interface JwtTokenService {
 
     Collection<? extends GrantedAuthority> getAuthoritesFromToken(String token);
     public Long getUserIdFromToken(String token);
+    public String getRoleFromToken(String token);
 }
