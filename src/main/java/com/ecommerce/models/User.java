@@ -43,7 +43,6 @@ public class User {
 
     @PrePersist
     protected void beforePersist(){
-        role = UserRole.CUSTOMER;
         isActive = false;
     }
     public String getFullName(){

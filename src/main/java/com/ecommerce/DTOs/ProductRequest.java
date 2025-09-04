@@ -16,7 +16,7 @@ public record ProductRequest(
         boolean isVisible,
         ProductStatus productStatus,
         String imageUrl,
-        @NotNull Long categoryId
+        @NotNull String category
 ) {
     public ProductRequest {
         if (name != null && name.isBlank()) {

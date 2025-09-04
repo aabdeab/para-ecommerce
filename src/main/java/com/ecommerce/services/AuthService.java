@@ -53,6 +53,15 @@ public class AuthService {
         log.info("[USER] : User Authenticated with email {}",authentication.getName());
         return tokenService.generateToken(authentication);
     }
+    @Transactional
+    public String registerUser(CreateUserDTO dto,String role) {
+        User user = AuthMapper.fromDTO(dto);
+        user.setPassword(passwordEncoder.encode(dto.password()));
+        user.setRole(UserRole.valueOf(role));
+        userRepository.save(user);
+        log.info("[USER] : User created with id {}", user.getUserId());
+        return login(AuthMapper.fromDto(dto));
+    }
 }
 
 

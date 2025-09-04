@@ -24,9 +24,9 @@ public class ProductService {
     private final ProductCategoryRepository categoryRepository;
 
     @Transactional
-    public Product createProduct(Product product, Long categoryId) {
+    public Product createProduct(Product product, String categoryName) {
         validateProduct(product);
-        ProductCategory category = categoryRepository.findById(categoryId)
+        ProductCategory category = categoryRepository.findByName(categoryName)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         product.setCategory(category);
         product.setCreatedAt(new Date());
