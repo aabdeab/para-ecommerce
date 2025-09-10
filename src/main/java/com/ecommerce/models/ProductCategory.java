@@ -1,5 +1,6 @@
 package com.ecommerce.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class ProductCategory {
     @Column(updatable = false)
     private Date createdAt;
     @OneToMany(mappedBy = "category",fetch=FetchType.LAZY)
+    @JsonIgnore
     private List<Product> products;
 
 }

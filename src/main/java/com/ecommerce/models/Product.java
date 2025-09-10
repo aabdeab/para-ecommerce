@@ -1,5 +1,6 @@
 package com.ecommerce.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +34,9 @@ public class Product {
     private Integer viewsCount;
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @JsonIgnore
     private ProductCategory category;
+
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     private Stock stock;
     @Enumerated(EnumType.STRING)

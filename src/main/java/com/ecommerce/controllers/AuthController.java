@@ -34,7 +34,6 @@ public class AuthController {
                 .build();
         return ResponseEntity.ok(response) ;
     }
-
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> login(@RequestBody @Valid LoginRequestDTO loginRequest) {
         String token = authService.login(loginRequest);

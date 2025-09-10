@@ -3,6 +3,7 @@ package com.ecommerce.DTOs;
 import com.ecommerce.models.ProductStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record ProductRequest(
@@ -16,6 +17,7 @@ public record ProductRequest(
         boolean isVisible,
         ProductStatus productStatus,
         String imageUrl,
+        @Positive
         @NotNull String category
 ) {
     public ProductRequest {

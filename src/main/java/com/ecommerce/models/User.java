@@ -43,7 +43,7 @@ public class User {
 
     @PrePersist
     protected void beforePersist(){
-        isActive = false;
+        isActive = true;
     }
     public String getFullName(){
         return firstName + lastName;

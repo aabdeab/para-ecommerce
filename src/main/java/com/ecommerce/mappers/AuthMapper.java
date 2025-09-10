@@ -7,10 +7,6 @@ import com.ecommerce.models.User;
 
 public class AuthMapper {
 
-
-    /**
-     * a Utility class should not be instantiated
-     */
     private AuthMapper (){
         throw new UnsupportedOperationException("This class should never be instantiated");
     }

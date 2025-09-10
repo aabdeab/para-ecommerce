@@ -27,11 +27,13 @@ public class SecurityConfig {
 
     private final UserDetailsManager userDetailsManager;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ExceptionHandlerFilter exceptionHandlerFilter;
     private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(UserDetailsManager userDetailsManager, JwtAuthenticationFilter jwtAuthenticationFilter, PasswordEncoder passwordEncoder) {
+    public SecurityConfig(UserDetailsManager userDetailsManager, JwtAuthenticationFilter jwtAuthenticationFilter, ExceptionHandlerFilter exceptionHandlerFilter, PasswordEncoder passwordEncoder) {
         this.userDetailsManager = userDetailsManager;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.exceptionHandlerFilter = exceptionHandlerFilter;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -52,7 +54,9 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
     @Bean

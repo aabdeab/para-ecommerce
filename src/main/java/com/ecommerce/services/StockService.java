@@ -142,7 +142,6 @@ public class StockService {
         });
         stockReservationRepository.saveAll(stockReservations);
     }
-
     /**
      * Bulk release reservations (same as above, for compatibility)
      */

@@ -6,12 +6,10 @@ import com.ecommerce.repositories.ProductRepository;
 import com.ecommerce.repositories.ProductCategoryRepository;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.AssertTrue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -29,13 +27,10 @@ public class ProductService {
         ProductCategory category = categoryRepository.findByName(categoryName)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         product.setCategory(category);
-        product.setCreatedAt(new Date());
-        product.setUpdatedAt(new Date());
         product.setIsVisible(true);
         product.setProductStatus(ProductStatus.AVAILABLE);
         return productRepository.save(product);
     }
-
     /**
      *
      * @param id the product id
@@ -98,7 +93,7 @@ public class ProductService {
     /** ======= Validation Helpers ======= **/
 
     private void validateProduct(Product product) {
-        Objects.requireNonNull(product.getName(), "Product name must not be null");
+        Assert.notNull(product.getName(), "Product name must not be null");
         if (product.getName().isBlank()) {
             throw new IllegalArgumentException("Product name must not be empty");
         }

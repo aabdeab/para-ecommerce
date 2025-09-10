@@ -1,5 +1,5 @@
 package com.ecommerce.controllers;
-
+import com.ecommerce.DTOs.CreateCategoryDto;
 import com.ecommerce.models.ProductCategory;
 import com.ecommerce.services.ProductCategoryService;
 import jakarta.validation.Valid;
@@ -8,9 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
@@ -20,17 +18,19 @@ public class ProductCategoryController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductCategory> createCategory(@Valid @RequestBody ProductCategory category) {
+    public ResponseEntity<ProductCategory> createCategory(@Valid @RequestBody CreateCategoryDto categoryDto) {
+        ProductCategory category = new ProductCategory();
+        category.setName(categoryDto.name());
+        category.setDescription(categoryDto.description());
+        category.setIsActive(categoryDto.isActive());
         ProductCategory created = categoryService.createCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<ProductCategory> getCategory(@PathVariable Long id) {
         ProductCategory category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
-
     @GetMapping
     public ResponseEntity<List<ProductCategory>> getAllCategories() {
         List<ProductCategory> categories = categoryService.getAllCategories();
@@ -41,8 +41,13 @@ public class ProductCategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductCategory> updateCategory(
             @PathVariable Long id,
-            @Valid @RequestBody ProductCategory category
+            @Valid @RequestBody CreateCategoryDto categoryDto
     ) {
+        ProductCategory category = new ProductCategory();
+        category.setName(categoryDto.name());
+        category.setDescription(categoryDto.description());
+        category.setIsActive(categoryDto.isActive());
+
         ProductCategory updated = categoryService.updateCategory(id, category);
         return ResponseEntity.ok(updated);
     }

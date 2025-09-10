@@ -31,16 +31,13 @@ public class ShippingService {
         if (shipment.getStatus() != ShipmentStatus.PENDING) {
             throw new IllegalStateException("Shipment is not in pending status for order: " + order.getOrderNumber());
         }
-
         shipment.setStatus(ShipmentStatus.SHIPPED);
         shipment.setShippedAt(LocalDateTime.now());
         shipment.setTrackingNumber(generateTrackingNumber());
         shipment.setProvider(determineShippingProvider(order));
         shipment.setServiceName(determineServiceName(order));
         shipment.setPickupAddress(getWarehouseAddress());
-
         shipmentRepository.save(shipment);
-
         logger.info("Shipment created for order " + order.getOrderNumber() +
                 ", tracking: " + shipment.getTrackingNumber());
     }
@@ -118,7 +115,6 @@ public class ShippingService {
             return ShippingProvider.UPS;
         }
     }
-
     /**
      * Determine service name based on order
      */
@@ -132,7 +128,6 @@ public class ShippingService {
     private String determineServiceNameFromRequest(CreateOrderRequest request) {
         return Boolean.TRUE.equals(request.getExpressShipping()) ? "Express Delivery" : "Standard Delivery";
     }
-
     /**
      * Calculate estimated delivery date
      */
