@@ -19,7 +19,9 @@ import java.util.List;
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class ProductController {
+
     private final ProductService productService;
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('INVENTORY_MANAGER')")
     public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductRequest request) {
@@ -33,6 +35,7 @@ public class ProductController {
         Product product = productService.getProductById(id);
         return ResponseEntity.ok(product);
     }
+
     @GetMapping
     public ResponseEntity<Page<Product>> getAllProducts(Pageable pageable) {
         Page<Product> products = productService.getAllProducts(pageable);

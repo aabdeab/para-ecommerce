@@ -4,7 +4,6 @@ package com.ecommerce.services;
 import com.ecommerce.API.JwtTokenService;
 import com.ecommerce.DTOs.CreateUserDTO;
 import com.ecommerce.DTOs.LoginRequestDTO;
-import com.ecommerce.exceptions.UserNotFoundException;
 import com.ecommerce.mappers.AuthMapper;
 import com.ecommerce.models.User;
 import com.ecommerce.models.UserRole;

@@ -238,7 +238,6 @@ public class OrderService {
             throw new IllegalStateException("Invalid status transition from " + from + " to " + to);
         }
     }
-
     private void handleStatusChange(Order order, OrderStatus from, OrderStatus to) {
         switch (to) {
             case PROCESSING -> notificationService.sendOrderProcessing(order);
@@ -250,9 +249,6 @@ public class OrderService {
             case COMPLETED -> notificationService.sendOrderCompleted(order);
         }
     }
-
-    // ===== UTILITY METHODS =====
-
     private String generateOrderNumber() {
         return "ORD-" + System.currentTimeMillis();
     }
@@ -269,7 +265,6 @@ public class OrderService {
     private Double calculateShippingCost(CreateOrderRequest request) {
         return request.getExpressShipping() ? 15.0 : 5.0;
     }
-
 
 
 }

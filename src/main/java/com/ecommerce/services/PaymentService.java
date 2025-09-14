@@ -33,8 +33,6 @@ public class PaymentService {
                 case INTERNAL -> processInternalPayment(payment, paymentRequest);
                 default -> throw new PaymentFailedException("Unsupported payment provider: " + payment.getProvider());
             }
-
-            // If we reach here, payment succeeded
             payment.setStatus(PaymentStatus.SUCCEEDED);
             payment.setPaidAt(LocalDateTime.now());
             payment.setProviderTransactionId(generateProviderTransactionId());
@@ -102,8 +100,6 @@ public class PaymentService {
 
         return paymentRepository.save(payment);
     }
-
-    // ===== PRIVATE PAYMENT PROCESSING METHODS =====
 
     private void validatePaymentRequest(PaymentRequest request, Payment payment) {
         if (request.amount().compareTo(payment.getAmount()) != 0) {
