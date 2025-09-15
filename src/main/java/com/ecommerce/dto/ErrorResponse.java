@@ -1,4 +1,4 @@
-package com.ecommerce.DTOs;
+package com.ecommerce.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.http.HttpStatus;

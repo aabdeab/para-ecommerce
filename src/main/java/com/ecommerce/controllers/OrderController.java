@@ -1,9 +1,10 @@
 package com.ecommerce.controllers;
 
-import com.ecommerce.DTOs.CreateOrderRequest;
-import com.ecommerce.DTOs.PaymentRequest;
+import com.ecommerce.dto.CreateOrderRequest;
+import com.ecommerce.dto.PaymentRequest;
 import com.ecommerce.models.Order;
 import com.ecommerce.models.OrderStatus;
+import com.ecommerce.models.SecurityUser;
 import com.ecommerce.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
 
-
     private final OrderService orderService;
 
     /**
@@ -40,7 +40,6 @@ public class OrderController {
         Order order = orderService.createUserOrder(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
-
     /**
      * Process payment for an order
      */
@@ -92,16 +91,6 @@ public class OrderController {
     }
 
     /**
-     * Get guest order by guest order ID
-     */
-    @GetMapping("/guest/{guestOrderId}")
-    public ResponseEntity<Order> getGuestOrder(@PathVariable String guestOrderId) {
-        log.info("Guest order lookup for guestOrderId: {}", guestOrderId);
-        Order order = orderService.getGuestOrderByGuestOrderId(guestOrderId);
-        return ResponseEntity.ok(order);
-    }
-
-    /**
      * Get orders by status (admin/inventory manager only)
      */
     @GetMapping("/status/{status}")
@@ -130,10 +119,10 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    // ===== HELPER METHODS =====
-
     private Long getUserIdFromAuthentication(Authentication authentication) {
-        // Simple implementation - adjust based on your authentication setup
-        return Long.parseLong(authentication.getName());
+        SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
+        return securityUser.getUserId();
     }
+
+
 }

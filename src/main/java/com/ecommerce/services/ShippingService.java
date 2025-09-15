@@ -1,6 +1,6 @@
 package com.ecommerce.services;
 
-import com.ecommerce.DTOs.CreateOrderRequest;
+import com.ecommerce.dto.CreateOrderRequest;
 import com.ecommerce.models.*;
 import com.ecommerce.repositories.ShipmentRepository;
 import lombok.AllArgsConstructor;

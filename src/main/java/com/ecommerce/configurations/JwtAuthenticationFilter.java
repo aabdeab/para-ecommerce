@@ -1,7 +1,7 @@
 package com.ecommerce.configurations;
 
 import com.ecommerce.API.JwtTokenService;
-import com.ecommerce.DTOs.ErrorResponse;
+import com.ecommerce.dto.ErrorResponse;
 import com.ecommerce.models.SecurityUser;
 import com.ecommerce.models.User;
 import com.ecommerce.models.UserRole;

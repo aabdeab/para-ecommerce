@@ -1,6 +1,6 @@
 package com.ecommerce.configurations;
 
-import com.ecommerce.DTOs.ErrorResponse;
+import com.ecommerce.dto.ErrorResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

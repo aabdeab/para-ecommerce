@@ -1,8 +1,8 @@
 package com.ecommerce.services;
 
-import com.ecommerce.DTOs.CartItemDto;
-import com.ecommerce.DTOs.CartItemSummary;
-import com.ecommerce.DTOs.CartSummary;
+import com.ecommerce.dto.CartItemDto;
+import com.ecommerce.dto.CartItemSummary;
+import com.ecommerce.dto.CartSummary;
 import com.ecommerce.exceptions.StockNotFound;
 import com.ecommerce.models.Cart;
 import com.ecommerce.models.CartItem;
@@ -13,14 +13,12 @@ import com.ecommerce.repositories.StockRepository;
 import com.ecommerce.repositories.ProductRepository;
 import com.ecommerce.utils.CartCalculator;
 import com.ecommerce.utils.StockValidator;
-import io.lettuce.core.dynamic.annotation.Param;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -162,7 +160,6 @@ public class CartService {
         return cartRepository.existsByUserId(userId);
     }
 
-    // ===== CART MIGRATION (Guest → User after login) =====
 
 
     @CacheEvict(value = {"userCartItems", "userCartItemCount"}, key = "#userId")

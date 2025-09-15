@@ -1,4 +1,4 @@
-package com.ecommerce.DTOs;
+package com.ecommerce.dto;
 
 import com.ecommerce.models.ProductStatus;
 import jakarta.validation.constraints.NotBlank;

@@ -1,6 +1,6 @@
 package com.ecommerce.controllers;
 
-import com.ecommerce.DTOs.ProductRequest;
+import com.ecommerce.dto.ProductRequest;
 import com.ecommerce.mappers.ProductMapper;
 import com.ecommerce.models.Product;
 import com.ecommerce.services.ProductService;

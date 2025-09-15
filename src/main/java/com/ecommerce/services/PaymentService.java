@@ -1,6 +1,6 @@
 package com.ecommerce.services;
 
-import com.ecommerce.DTOs.PaymentRequest;
+import com.ecommerce.dto.PaymentRequest;
 import com.ecommerce.exceptions.PaymentFailedException;
 import com.ecommerce.models.*;
 import com.ecommerce.repositories.PaymentRepository;

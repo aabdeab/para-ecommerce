@@ -1,7 +1,7 @@
 package com.ecommerce.services;
 
-import com.ecommerce.DTOs.CreateOrderRequest;
-import com.ecommerce.DTOs.PaymentRequest;
+import com.ecommerce.dto.CreateOrderRequest;
+import com.ecommerce.dto.PaymentRequest;
 import com.ecommerce.exceptions.OrderNotFound;
 import com.ecommerce.exceptions.PaymentFailedException;
 import com.ecommerce.models.*;

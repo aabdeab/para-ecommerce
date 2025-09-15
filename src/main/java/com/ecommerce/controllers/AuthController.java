@@ -1,8 +1,8 @@
 package com.ecommerce.controllers;
 
-import com.ecommerce.DTOs.ApiResponse;
-import com.ecommerce.DTOs.CreateUserDTO;
-import com.ecommerce.DTOs.LoginRequestDTO;
+import com.ecommerce.dto.ApiResponse;
+import com.ecommerce.dto.CreateUserDTO;
+import com.ecommerce.dto.LoginRequestDTO;
 import com.ecommerce.services.AuthService;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;

@@ -1,4 +1,4 @@
-package com.ecommerce.DTOs;
+package com.ecommerce.dto;
 
 import com.ecommerce.models.PaymentMethod;
 import jakarta.validation.constraints.*;

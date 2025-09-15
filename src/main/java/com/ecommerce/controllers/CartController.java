@@ -1,8 +1,8 @@
 package com.ecommerce.controllers;
 
-import com.ecommerce.DTOs.ApiResponse;
-import com.ecommerce.DTOs.CartItemDto;
-import com.ecommerce.DTOs.CartSummary;
+import com.ecommerce.dto.ApiResponse;
+import com.ecommerce.dto.CartItemDto;
+import com.ecommerce.dto.CartSummary;
 import com.ecommerce.models.SecurityUser;
 import com.ecommerce.services.CartService;
 import jakarta.validation.Valid;

@@ -1,6 +1,4 @@
-package com.ecommerce.DTOs;
-import lombok.Data;
-import lombok.Getter;
+package com.ecommerce.dto;
 
 import java.math.BigDecimal;
 

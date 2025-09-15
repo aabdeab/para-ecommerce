@@ -1,8 +1,7 @@
-package com.ecommerce.DTOs;
+package com.ecommerce.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public record CreateUserDTO(
         @Email(message = "Invalid email format")

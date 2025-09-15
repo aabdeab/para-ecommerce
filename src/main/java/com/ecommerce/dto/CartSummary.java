@@ -1,4 +1,4 @@
-package com.ecommerce.DTOs;
+package com.ecommerce.dto;
 
 import lombok.Builder;
 

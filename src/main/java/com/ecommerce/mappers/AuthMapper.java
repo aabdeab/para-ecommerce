@@ -1,7 +1,7 @@
 package com.ecommerce.mappers;
 
-import com.ecommerce.DTOs.CreateUserDTO;
-import com.ecommerce.DTOs.LoginRequestDTO;
+import com.ecommerce.dto.CreateUserDTO;
+import com.ecommerce.dto.LoginRequestDTO;
 import com.ecommerce.models.User;
 
 

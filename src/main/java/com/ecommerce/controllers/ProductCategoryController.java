@@ -1,5 +1,5 @@
 package com.ecommerce.controllers;
-import com.ecommerce.DTOs.CreateCategoryDto;
+import com.ecommerce.dto.CreateCategoryDto;
 import com.ecommerce.models.ProductCategory;
 import com.ecommerce.services.ProductCategoryService;
 import jakarta.validation.Valid;

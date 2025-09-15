@@ -1,6 +1,6 @@
 package com.ecommerce.mappers;
 
-import com.ecommerce.DTOs.ProductRequest;
+import com.ecommerce.dto.ProductRequest;
 import com.ecommerce.models.Product;
 
 public  class ProductMapper {

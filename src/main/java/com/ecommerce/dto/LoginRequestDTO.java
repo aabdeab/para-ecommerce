@@ -1,9 +1,8 @@
-package com.ecommerce.DTOs;
+package com.ecommerce.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
-import lombok.Getter;
 
 @Builder
 public record LoginRequestDTO(

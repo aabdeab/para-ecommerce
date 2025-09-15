@@ -1,8 +1,8 @@
 package com.ecommerce.controllers;
 
 import com.ecommerce.API.JwtTokenService;
-import com.ecommerce.DTOs.CreateUserDTO;
-import com.ecommerce.DTOs.LoginRequestDTO;
+import com.ecommerce.dto.CreateUserDTO;
+import com.ecommerce.dto.LoginRequestDTO;
 import com.ecommerce.services.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
