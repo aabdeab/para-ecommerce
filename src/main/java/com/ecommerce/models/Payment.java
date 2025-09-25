@@ -39,7 +39,7 @@ public class Payment {
     private PaymentStatus status;
 
     @Enumerated(EnumType.STRING)
-    private PaymentProvider provider; // STRIPE, PAYPAL, etc.
+    private PaymentProvider provider;
 
     private String providerTransactionId;
     private String providerSessionId;

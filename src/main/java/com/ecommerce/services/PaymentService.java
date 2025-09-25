@@ -26,11 +26,9 @@ public class PaymentService {
 
         try {
             validatePaymentRequest(paymentRequest, payment);
-
             switch (payment.getProvider()) {
                 case STRIPE -> processStripePayment(payment, paymentRequest);
                 case PAYPAL -> processPayPalPayment(payment, paymentRequest);
-                case INTERNAL -> processInternalPayment(payment, paymentRequest);
                 default -> throw new PaymentFailedException("Unsupported payment provider: " + payment.getProvider());
             }
             payment.setStatus(PaymentStatus.SUCCEEDED);
@@ -69,7 +67,6 @@ public class PaymentService {
             switch (payment.getProvider()) {
                 case STRIPE -> processStripeRefund(payment);
                 case PAYPAL -> processPayPalRefund(payment);
-                case INTERNAL -> processInternalRefund(payment);
                 default -> throw new PaymentFailedException("Unsupported payment provider for refund: " + payment.getProvider());
             }
 
@@ -112,7 +109,6 @@ public class PaymentService {
         switch (payment.getMethod()) {
             case CREDIT_CARD, DEBIT_CARD -> validateCardDetails(request);
             case PAYPAL -> validatePayPalDetails(request);
-            case BANK_TRANSFER -> validateBankDetails(request);
         }
     }
 
@@ -202,7 +198,6 @@ public class PaymentService {
         return switch (method) {
             case CREDIT_CARD, DEBIT_CARD -> PaymentProvider.STRIPE;
             case PAYPAL -> PaymentProvider.PAYPAL;
-            default -> PaymentProvider.INTERNAL;
         };
     }
 

@@ -1,6 +1,9 @@
 package com.ecommerce.services;
 
+import com.ecommerce.dto.ProductRequest;
+import com.ecommerce.exceptions.CategoryNotFoundException;
 import com.ecommerce.exceptions.ResourceNotFoundException;
+import com.ecommerce.mappers.ProductMapper;
 import com.ecommerce.models.*;
 import com.ecommerce.repositories.ProductRepository;
 import com.ecommerce.repositories.ProductCategoryRepository;
@@ -22,15 +25,18 @@ public class ProductService {
     private final ProductCategoryRepository categoryRepository;
 
     @Transactional
-    public Product createProduct(Product product, String categoryName) {
-        validateProduct(product);
+    public Product createProduct(ProductRequest request, String categoryName) {
         ProductCategory category = categoryRepository.findByName(categoryName)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-        product.setCategory(category);
-        product.setIsVisible(true);
-        product.setProductStatus(ProductStatus.AVAILABLE);
-        return productRepository.save(product);
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+
+        Product newProduct = ProductMapper.mapToProduct(request);
+        newProduct.setCategory(category);
+        newProduct.setIsVisible(true);
+        newProduct.setProductStatus(ProductStatus.AVAILABLE);
+
+        return productRepository.save(newProduct);
     }
+
     /**
      *
      * @param id the product id
@@ -53,10 +59,7 @@ public class ProductService {
     @Transactional
     public Product updateProduct(Long id, Product updatedProduct) {
         Objects.requireNonNull(updatedProduct, "Updated product must not be null");
-        validateProduct(updatedProduct);
-
         Product existing = getProductById(id);
-
         existing.setName(updatedProduct.getName());
         existing.setDescription(updatedProduct.getDescription());
         existing.setBrand(updatedProduct.getBrand());
@@ -68,7 +71,6 @@ public class ProductService {
         existing.setProductStatus(updatedProduct.getProductStatus());
         existing.setImageUrl(updatedProduct.getImageUrl());
         existing.setUpdatedAt(new Date());
-
         return productRepository.save(existing);
     }
 
@@ -90,18 +92,5 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    /** ======= Validation Helpers ======= **/
 
-    private void validateProduct(Product product) {
-        Assert.notNull(product.getName(), "Product name must not be null");
-        if (product.getName().isBlank()) {
-            throw new IllegalArgumentException("Product name must not be empty");
-        }
-        if (product.getPrice() == null || product.getPrice() < 0) {
-            throw new IllegalArgumentException("Price must be non-null and >= 0");
-        }
-        if (product.getSku() == null || product.getSku().isBlank()) {
-            throw new IllegalArgumentException("SKU must not be empty");
-        }
-    }
 }

@@ -30,7 +30,8 @@ public class Product {
     private boolean withDiscount;
     private Double discountPrice;
     private String sku;
-    private Boolean isVisible;
+    @Builder.Default
+    private Boolean isVisible = true;
     private Integer viewsCount;
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -48,10 +49,6 @@ public class Product {
     private Date updatedAt;
     private Date deletedAt;
 
-    @PrePersist
-    protected void beforePersist(){
-        isVisible = true;
-    }
 }
 
 

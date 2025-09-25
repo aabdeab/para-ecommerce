@@ -16,7 +16,7 @@ public record CreateUserDTO(
 
         String phone,
 
-        @NotBlank
+        @NotBlank(message = "password should not be empty")
         String password
 
 

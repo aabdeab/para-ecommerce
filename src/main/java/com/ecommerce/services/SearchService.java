@@ -1,4 +1,4 @@
 package com.ecommerce.services;
 
-public class SecurityServiceTest {
+public class SearchService {
 }

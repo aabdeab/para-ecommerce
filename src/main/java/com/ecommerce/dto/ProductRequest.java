@@ -7,7 +7,9 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record ProductRequest(
-        @NotBlank String name,
+        @NotBlank(message = "name must not be empty")
+        @NotNull(message = "must provide a product name")
+        String name,
         String description,
         String brand,
         @NotNull @PositiveOrZero Double price,
@@ -17,18 +19,8 @@ public record ProductRequest(
         boolean isVisible,
         ProductStatus productStatus,
         String imageUrl,
-        @Positive
-        @NotNull String category
+        @NotNull(message = "Must specify a category for the product")
+        String category
 ) {
-    public ProductRequest {
-        if (name != null && name.isBlank()) {
-            throw new IllegalArgumentException("Product name must not be empty");
-        }
-        if (price != null && price < 0) {
-            throw new IllegalArgumentException("Price must be positive or zero");
-        }
-        if (sku != null && sku.isBlank()) {
-            throw new IllegalArgumentException("SKU must not be empty");
-        }
-    }
+
 }

@@ -19,6 +19,8 @@ public class ShippingService {
 
     /**
      * Updates existing shipment to SHIPPED status when order status changes to SHIPPED
+     * @param order
+     * throws IllegalStateException if a shipment does not exist or not in a pending state for the given order
      */
     @Transactional
     public void createShipment(Order order) {
@@ -98,7 +100,6 @@ public class ShippingService {
         logger.info("Shipment delivered for order " + order.getOrderNumber());
     }
 
-    // ===== HELPER METHODS =====
 
     private String generateTrackingNumber() {
         return "TRK-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();

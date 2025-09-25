@@ -181,11 +181,6 @@ public class OrderService {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    public Order getGuestOrderByGuestOrderId(String guestOrderId) {
-        return  orderRepository.findByGuestOrderId(guestOrderId)
-                .orElseThrow(() -> new OrderNotFound("Guest order not found: " + guestOrderId));
-    }
-
     public List<Order> getOrdersByStatus(OrderStatus status) {
         return orderRepository.findByStatusOrderByCreatedAtDesc(status);
     }
@@ -194,8 +189,7 @@ public class OrderService {
         return orderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new OrderNotFound("Order not found: " + orderNumber));
     }
-
-    // ===== PRIVATE HELPER METHODS =====
+    
 
     private Order findOrderById(Long orderId) {
         return orderRepository.findById(orderId)

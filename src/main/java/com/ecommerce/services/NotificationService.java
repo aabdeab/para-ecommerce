@@ -9,7 +9,6 @@ public class NotificationService {
     @Async("notifications-pool")
     public void sendOrderConfirmation(Order savedOrder) {
         sendEmailConfirmation(savedOrder.getGuestEmail());
-
     }
     @Async("notifications-pool")
     public void sendOrderCancellation(Order savedOrder) {
