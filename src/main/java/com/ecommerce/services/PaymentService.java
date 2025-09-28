@@ -2,6 +2,8 @@ package com.ecommerce.services;
 
 import com.ecommerce.dto.PaymentRequest;
 import com.ecommerce.exceptions.PaymentFailedException;
+import com.ecommerce.gateways.PaypalGateway;
+import com.ecommerce.gateways.StripeGateway;
 import com.ecommerce.models.*;
 import com.ecommerce.repositories.PaymentRepository;
 import lombok.AllArgsConstructor;
@@ -18,6 +20,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PaymentService {
     private final PaymentRepository paymentRepository;
+    // Gateways sandbox injectées
+    private final StripeGateway stripeGateway;
+    private final PaypalGateway paypalGateway;
 
     @Transactional
     public void processPayment(Payment payment, PaymentRequest paymentRequest) {
@@ -33,7 +38,10 @@ public class PaymentService {
             }
             payment.setStatus(PaymentStatus.SUCCEEDED);
             payment.setPaidAt(LocalDateTime.now());
-            payment.setProviderTransactionId(generateProviderTransactionId());
+            // Ne génère un ID que si la gateway ne l'a pas défini
+            if (payment.getProviderTransactionId() == null) {
+                payment.setProviderTransactionId(generateProviderTransactionId());
+            }
 
             paymentRepository.save(payment);
 
@@ -113,27 +121,16 @@ public class PaymentService {
     }
 
     private void processStripePayment(Payment payment, PaymentRequest request) {
-        // Simulate Stripe API call
-        simulateExternalApiCall();
-
-        // In real implementation, you would:
-        // 1. Create Stripe PaymentIntent
-        // 2. Confirm payment with card details
-        // 3. Handle 3D Secure if required
-        // 4. Get transaction ID from Stripe response
-
+        // Déléguer à la passerelle Stripe sandbox
+        String providerTxnId = stripeGateway.charge(payment, request);
+        payment.setProviderTransactionId(providerTxnId);
         log.info("Stripe payment processed for amount: {}", payment.getAmount());
     }
 
     private void processPayPalPayment(Payment payment, PaymentRequest request) {
-        // Simulate PayPal API call
-        simulateExternalApiCall();
-
-        // In real implementation:
-        // 1. Create PayPal order
-        // 2. Capture payment
-        // 3. Handle PayPal response
-
+        // Déléguer à la passerelle PayPal sandbox
+        String providerTxnId = paypalGateway.charge(payment, request);
+        payment.setProviderTransactionId(providerTxnId);
         log.info("PayPal payment processed for amount: {}", payment.getAmount());
     }
 
@@ -145,12 +142,12 @@ public class PaymentService {
     // ===== REFUND PROCESSING METHODS =====
 
     private void processStripeRefund(Payment payment) {
-        simulateExternalApiCall();
+        stripeGateway.refund(payment);
         log.info("Stripe refund processed for payment: {}", payment.getPaymentReference());
     }
 
     private void processPayPalRefund(Payment payment) {
-        simulateExternalApiCall();
+        paypalGateway.refund(payment);
         log.info("PayPal refund processed for payment: {}", payment.getPaymentReference());
     }
 
@@ -199,17 +196,5 @@ public class PaymentService {
             case CREDIT_CARD, DEBIT_CARD -> PaymentProvider.STRIPE;
             case PAYPAL -> PaymentProvider.PAYPAL;
         };
-    }
-
-    private void simulateExternalApiCall() {
-        try {
-            Thread.sleep(100);
-            if (Math.random() < 0.1) {
-                throw new RuntimeException("External payment service temporarily unavailable");
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Payment processing interrupted");
-        }
     }
 }

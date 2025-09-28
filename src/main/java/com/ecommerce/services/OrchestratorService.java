@@ -1,4 +1,6 @@
 package com.ecommerce.services;
 
-public class OrchestratorService {
+@Deprecated
+class OrchestratorService {
+    // Deprecated: remplacé par CheckoutService. Classe conservée sans annotation @Service pour éviter l’enregistrement en tant que bean Spring.
 }

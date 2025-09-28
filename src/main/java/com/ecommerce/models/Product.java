@@ -39,6 +39,7 @@ public class Product {
     private ProductCategory category;
 
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @JsonIgnore
     private Stock stock;
     @Enumerated(EnumType.STRING)
     private ProductStatus productStatus;

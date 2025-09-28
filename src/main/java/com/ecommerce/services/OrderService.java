@@ -3,9 +3,8 @@ package com.ecommerce.services;
 import com.ecommerce.dto.CreateOrderRequest;
 import com.ecommerce.dto.PaymentRequest;
 import com.ecommerce.exceptions.OrderNotFound;
-import com.ecommerce.exceptions.PaymentFailedException;
 import com.ecommerce.models.*;
-import com.ecommerce.repositories.*;
+import com.ecommerce.repositories.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,103 +12,45 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
+/**
+ * Service responsable uniquement de la gestion CRUD des commandes.
+ * Ne contient aucune logique d'orchestration.
+ * Toute orchestration doit être déléguée à CheckoutService.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final CartService cartService;
-    private final StockService stockService;
-    private final PaymentService paymentService;
-    private final ShippingService shippingService;
-    private final NotificationService notificationService;
 
     /**
-     * Create order for authenticated user
+     * Create a basic order entity (called by CheckoutService during orchestration)
      */
     @Transactional
-    public Order createUserOrder(Long userId, CreateOrderRequest request) {
-        Cart cart = cartService.getCartForUser(userId);
-        return createOrderFromCart(cart, request, userId, null, null);
-    }
-    /**
-     * Process payment for an order
-     */
-    @Transactional
-    public Order processPayment(Long orderId, PaymentRequest paymentRequest) {
-        Order order = findOrderById(orderId);
-        if (order.getStatus() != OrderStatus.PENDING) {
-            throw new IllegalStateException("Order is not in pending state");
-        }
-        try {
-            Payment payment = order.getPayment();
-            paymentService.processPayment(payment, paymentRequest);
+    public Order createOrder(String orderNumber, Long userId, String guestOrderId, String guestEmail,
+                           Double subtotal, Double taxAmount, Double shippingCost, Double discountAmount,
+                           String shippingAddress, String billingAddress, String currencyCode) {
+        Order order = Order.builder()
+                .orderNumber(orderNumber)
+                .userId(userId)
+                .guestOrderId(guestOrderId)
+                .guestEmail(guestEmail)
+                .status(OrderStatus.PENDING)
+                .subtotal(subtotal)
+                .taxAmount(taxAmount)
+                .shippingCost(shippingCost)
+                .discountAmount(discountAmount)
+                .shippingAddress(shippingAddress)
+                .billingAddress(billingAddress)
+                .currencyCode(currencyCode)
+                .build();
 
-            if (payment.getStatus() == PaymentStatus.SUCCEEDED) {
-                confirmOrder(order);
-            } else {
-                handlePaymentFailure(order, payment.getFailureReason());
-            }
+        order.setTotalAmount(order.getSubtotal() + order.getTaxAmount() +
+                order.getShippingCost() - order.getDiscountAmount());
 
-        } catch (PaymentFailedException e) {
-            handlePaymentFailure(order, e.getMessage());
-            throw e;
-        }
-
-        return order;
-    }
-
-    /**
-     * Confirm order after successful payment
-     */
-    @Transactional
-    public Order confirmOrder(Order order) {
-        order.setStatus(OrderStatus.CONFIRMED);
-        stockService.confirmReservations(order.getStockReservations());
-
-        if (order.getUserId() != null) {
-            cartService.clearUserCart(order.getUserId());
-        } else if (order.getGuestOrderId() != null) {
-           cartService.clearGuestCart(order.getGuestOrderId());
-        }
-
-        Order savedOrder = orderRepository.save(order);
-
-        notificationService.sendOrderConfirmation(savedOrder);
-
-        log.info("Order confirmed: orderNumber={}", order.getOrderNumber());
-        return savedOrder;
-    }
-
-    @Transactional
-    public Order cancelOrder(Long orderId, String reason) {
-        Order order = findOrderById(orderId);
-        if (!order.canBeCanceled()) {
-            throw new IllegalStateException("Order cannot be canceled in current status: " + order.getStatus());
-        }
-        stockService.releaseReservations(order.getStockReservations());
-        if (order.getPayment() != null && order.getPayment().getStatus() == PaymentStatus.SUCCEEDED) {
-            paymentService.processRefund(order.getPayment());
-        }
-        if (order.getShipment() != null &&
-                order.getShipment().getStatus() == ShipmentStatus.PENDING) {
-            shippingService.failShipment(order, "Order canceled: " + reason);
-        }
-
-        order.setStatus(OrderStatus.CANCELED);
-        order.setCanceledAt(LocalDateTime.now());
-        order.setCancelReason(reason);
-
-        Order savedOrder = orderRepository.save(order);
-
-        notificationService.sendOrderCancellation(savedOrder);
-
-        log.info("Order canceled: orderNumber={}, reason={}", order.getOrderNumber(), reason);
-        return savedOrder;
+        return orderRepository.save(order);
     }
 
     /**
@@ -134,49 +75,51 @@ public class OrderService {
         return savedOrder;
     }
 
-
-    private Order createOrderFromCart(Cart cart, CreateOrderRequest request, Long userId,
-                                      String guestOrderId, String guestEmail) {
-
-        List<StockReservation> reservations = stockService.reserveStockForCart(cart);
-
-        Order order = Order.builder()
-                .orderNumber(generateOrderNumber())
-                .userId(userId)
-                .guestOrderId(guestOrderId)
-                .guestEmail(guestEmail)
-                .status(OrderStatus.PENDING)
-                .subtotal(cart.getTotalAmount())
-                .taxAmount(calculateTax(cart.getTotalAmount()))
-                .shippingCost(calculateShippingCost(request))
-                .discountAmount(request.getDiscountAmount())
-                .currencyCode("USD")
-                .shippingAddress(request.getShippingAddress())
-                .billingAddress(request.getBillingAddress())
-                .stockReservations(reservations)
-                .build();
-
-        order.setTotalAmount(order.getSubtotal() + order.getTaxAmount() +
-                order.getShippingCost() - order.getDiscountAmount());
-
-        List<OrderItem> orderItems = convertCartItemsToOrderItems(cart, order);
-        order.setOrderItems(orderItems);
-
-        reservations.forEach(reservation -> reservation.setOrder(order));
-
-        Order savedOrder = orderRepository.save(order);
-
-        Payment payment = paymentService.createPendingPayment(savedOrder, request.getPaymentMethod());
-        savedOrder.setPayment(payment);
-
-        Shipment shipment = shippingService.createPendingShipment(savedOrder, request);
-        savedOrder.setShipment(shipment);
-
-        log.info("Order created successfully: orderNumber={}, userId={}, guestOrderId={}",
-                savedOrder.getOrderNumber(), userId, guestEmail);
-
-        return savedOrder;
+    /**
+     * Mark order as confirmed - doit être appelé par CheckoutService après un paiement réussi
+     */
+    @Transactional
+    public Order confirmOrder(Long orderId) {
+        Order order = findOrderById(orderId);
+        order.setStatus(OrderStatus.CONFIRMED);
+        return orderRepository.save(order);
     }
+
+    /**
+     * Mark order as failed - doit être appelé par CheckoutService après un échec de paiement
+     */
+    @Transactional
+    public Order failOrder(Long orderId, String reason) {
+        Order order = findOrderById(orderId);
+        order.setStatus(OrderStatus.FAILED);
+        return orderRepository.save(order);
+    }
+
+    /**
+     * Cancel order - simple changement de statut, l'orchestration est gérée par CheckoutService
+     */
+    @Transactional
+    public Order cancelOrder(Long orderId, String reason) {
+        Order order = findOrderById(orderId);
+        if (!order.canBeCanceled()) {
+            throw new IllegalStateException("Order cannot be canceled in current status: " + order.getStatus());
+        }
+        order.setStatus(OrderStatus.CANCELED);
+        order.setCanceledAt(LocalDateTime.now());
+        order.setCancelReason(reason);
+        return orderRepository.save(order);
+    }
+
+    /**
+     * Save a complete order with all its related entities (OrderItems, reservations, etc.)
+     * Used by CheckoutService after order construction
+     */
+    @Transactional
+    public Order saveOrder(Order order) {
+        return orderRepository.save(order);
+    }
+
+    // Query methods
     public List<Order> getOrdersByUserId(Long userId) {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
@@ -189,33 +132,10 @@ public class OrderService {
         return orderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new OrderNotFound("Order not found: " + orderNumber));
     }
-    
 
-    private Order findOrderById(Long orderId) {
+    public Order findOrderById(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFound("Order not found: " + orderId));
-    }
-
-    private List<OrderItem> convertCartItemsToOrderItems(Cart cart, Order order) {
-        return cart.getItems().stream()
-                .map(cartItem -> OrderItem.builder()
-                        .order(order)
-                        .productId(cartItem.getProductId())
-                        .quantity(cartItem.getQuantity())
-                        .unitPrice(cartItem.getPrice())
-                        .totalPrice(cartItem.calculateSubtotal())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    private void handlePaymentFailure(Order order, String reason) {
-        order.setStatus(OrderStatus.FAILED);
-        stockService.releaseReservations(order.getStockReservations());
-        if (order.getShipment() != null) {
-            shippingService.failShipment(order, "Payment failed: " + reason);
-        }
-        orderRepository.save(order);
-        notificationService.sendPaymentFailure(order, reason);
     }
 
     private void validateStatusTransition(OrderStatus from, OrderStatus to) {
@@ -232,33 +152,10 @@ public class OrderService {
             throw new IllegalStateException("Invalid status transition from " + from + " to " + to);
         }
     }
+
     private void handleStatusChange(Order order, OrderStatus from, OrderStatus to) {
-        switch (to) {
-            case PROCESSING -> notificationService.sendOrderProcessing(order);
-            case SHIPPED -> {
-                shippingService.createShipment(order);
-                notificationService.sendOrderShipped(order);
-            }
-            case DELIVERED -> notificationService.sendOrderDelivered(order);
-            case COMPLETED -> notificationService.sendOrderCompleted(order);
-        }
+        // OrderService ne gère plus les side effects - c'est la responsabilité de CheckoutService
+        log.info("Order status changed: orderNumber={}, from={}, to={}",
+                order.getOrderNumber(), from, to);
     }
-    private String generateOrderNumber() {
-        return "ORD-" + System.currentTimeMillis();
-    }
-
-    private String generateGuestOrderId() {
-        return "GUEST-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
-
-
-    private Double calculateTax(Double subtotal) {
-        return subtotal * 0.08;
-    }
-
-    private Double calculateShippingCost(CreateOrderRequest request) {
-        return request.getExpressShipping() ? 15.0 : 5.0;
-    }
-
-
 }

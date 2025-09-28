@@ -20,7 +20,13 @@ public record ProductRequest(
         ProductStatus productStatus,
         String imageUrl,
         @NotNull(message = "Must specify a category for the product")
-        String category
+        String category,
+        @PositiveOrZero(message = "Initial stock must be zero or positive")
+        Integer initialStock
 ) {
-
+    public ProductRequest {
+        if (initialStock == null) {
+            initialStock = 0;
+        }
+    }
 }

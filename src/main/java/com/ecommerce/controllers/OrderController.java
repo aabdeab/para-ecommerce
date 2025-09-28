@@ -1,15 +1,11 @@
 package com.ecommerce.controllers;
 
-import com.ecommerce.dto.CreateOrderRequest;
-import com.ecommerce.dto.PaymentRequest;
 import com.ecommerce.models.Order;
 import com.ecommerce.models.OrderStatus;
 import com.ecommerce.models.SecurityUser;
 import com.ecommerce.services.OrderService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,6 +13,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasRole;
+
+/**
+ * Controller responsable uniquement des opérations de consultation et d'administration des commandes.
+ *
+ * Pour les opérations de création, paiement et annulation de commandes,
+ * utilisez CheckoutController qui orchestre correctement ces processus.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/orders")
@@ -26,64 +30,9 @@ public class OrderController {
     private final OrderService orderService;
 
     /**
-     * Create order for authenticated user
-     */
-    @PostMapping
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Order> createUserOrder(
-            @Valid @RequestBody CreateOrderRequest request,
-            Authentication authentication) {
-
-        Long userId = getUserIdFromAuthentication(authentication);
-        log.info("Creating order for userId: {}", userId);
-
-        Order order = orderService.createUserOrder(userId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(order);
-    }
-    /**
-     * Process payment for an order
-     */
-    @PostMapping("/{orderId}/payment")
-    public ResponseEntity<Order> processPayment(
-            @PathVariable Long orderId,
-            @Valid @RequestBody PaymentRequest paymentRequest) {
-
-        log.info("Processing payment for orderId: {}", orderId);
-        Order order = orderService.processPayment(orderId, paymentRequest);
-        return ResponseEntity.ok(order);
-    }
-    /**
-     * Cancel an order
-     */
-    @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<Order> cancelOrder(
-            @PathVariable Long orderId,
-            @RequestParam(required = false, defaultValue = "Cancelled by user") String reason) {
-
-        log.info("Cancelling order: {}, reason: {}", orderId, reason);
-        Order order = orderService.cancelOrder(orderId, reason);
-        return ResponseEntity.ok(order);
-    }
-
-    /**
-     * Update order status (admin/inventory manager only)
-     */
-    @PutMapping("/{orderId}/status")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INVENTORY_MANAGER')")
-    public ResponseEntity<Order> updateOrderStatus(
-            @PathVariable Long orderId,
-            @RequestParam OrderStatus newStatus) {
-
-        log.info("Updating order {} to status: {}", orderId, newStatus);
-        Order order = orderService.updateOrderStatus(orderId, newStatus);
-        return ResponseEntity.ok(order);
-    }
-
-    /**
-     * Get user's orders
+     * Get user's orders (consultation seulement)
      */
     @GetMapping("/my-orders")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Order>> getMyOrders(Authentication authentication) {
         Long userId = getUserIdFromAuthentication(authentication);
         List<Order> orders = orderService.getOrdersByUserId(userId);
@@ -91,38 +40,54 @@ public class OrderController {
     }
 
     /**
+     * Get order by ID (consultation seulement)
+     */
+    @GetMapping("/{orderId}")
+    public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
+        Order order = orderService.findOrderById(orderId);
+        return ResponseEntity.ok(order);
+    }
+
+    /**
+     * Get order by order number (consultation seulement)
+     */
+    @GetMapping("/number/{orderNumber}")
+    @PreAuthorize( "hasRole('ADMIN')" )
+    public ResponseEntity<Order> getOrderByNumber(@PathVariable String orderNumber) {
+        Order order = orderService.findOrderByNumber(orderNumber);
+        return ResponseEntity.ok(order);
+    }
+
+    /**
      * Get orders by status (admin/inventory manager only)
      */
     @GetMapping("/status/{status}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INVENTORY_MANAGER')")
+    @PreAuthorize("hasRole('ADMIN') ")
     public ResponseEntity<List<Order>> getOrdersByStatus(@PathVariable OrderStatus status) {
         List<Order> orders = orderService.getOrdersByStatus(status);
         return ResponseEntity.ok(orders);
     }
 
     /**
-     * Find order by order number
+     * Update order status (admin/inventory manager only)
+     * Cette opération ne fait que changer le statut, sans orchestration
      */
-    @GetMapping("/number/{orderNumber}")
-    public ResponseEntity<Order> findOrderByNumber(@PathVariable String orderNumber) {
-        Order order = orderService.findOrderByNumber(orderNumber);
+    @PutMapping("/{orderId}/status")
+    @PreAuthorize("hasRole('ADMIN') ")
+    public ResponseEntity<Order> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam OrderStatus newStatus) {
+
+        log.info("Admin updating order {} to status: {}", orderId, newStatus);
+        Order order = orderService.updateOrderStatus(orderId, newStatus);
         return ResponseEntity.ok(order);
     }
 
-    /**
-     * Get orders by user ID (admin/inventory manager only)
-     */
-    @GetMapping("/user/{userId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INVENTORY_MANAGER')")
-    public ResponseEntity<List<Order>> getOrdersByUserId(@PathVariable Long userId) {
-        List<Order> orders = orderService.getOrdersByUserId(userId);
-        return ResponseEntity.ok(orders);
-    }
-
     private Long getUserIdFromAuthentication(Authentication authentication) {
-        SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
-        return securityUser.getUserId();
+        if (authentication != null && authentication.getPrincipal() instanceof SecurityUser securityUser) {
+            return securityUser.getUserId();
+        }
+        throw new IllegalStateException("User not authenticated");
     }
-
 
 }

@@ -17,6 +17,23 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        # Activer les statistiques Hibernate
+        generate_statistics: true
+        # Activer le cache de second niveau pour les stats
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+        # Configuration pour les requêtes lentes
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 1000
+        # Activer les logs détaillés des requêtes
+        use_sql_comments: true
+        # Logging des paramètres de bind
+        type:
+          descriptor:
+            sql: TRACE
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   redis:
@@ -30,11 +47,43 @@ spring:
         min-idle: 1
         max-wait: 10000
 
+# Configuration de logging pour la surveillance des performances
+logging:
+  level:
+    # Logs des requêtes SQL avec timing
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.type.descriptor.sql.BasicExtractor: TRACE
+    # Statistiques Hibernate
+    org.hibernate.stat: DEBUG
+    # Logs des requêtes lentes
+    org.hibernate.slow.query: WARN
+    # Pool de connexions
+    com.zaxxer.hikari: DEBUG
+    # Transactions
+    org.springframework.transaction: DEBUG
+    # Cache de second niveau
+    org.hibernate.cache: DEBUG
+
 ecommerce:
   stock:
     reservation:
       expiry:
          minutes: 30
+  # Configuration pour mocker les notifications en développement
+  notifications:
+    enabled: false
+    mock: true
+    log-only: true
+  # Configuration de surveillance des performances
+  monitoring:
+    queries:
+      # Seuil pour considérer une requête comme lente (en ms)
+      slow-query-threshold: 1000
+      # Activer le logging des requêtes lentes
+      log-slow-queries: true
+      # Activer les statistiques détaillées
+      enable-detailed-stats: true
 
 jwt:
   secret: ${JWT_SECRET}

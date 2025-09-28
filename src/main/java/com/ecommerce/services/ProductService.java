@@ -10,6 +10,7 @@ import com.ecommerce.repositories.ProductCategoryRepository;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,12 +18,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductCategoryRepository categoryRepository;
+    private final StockService stockService;
 
     @Transactional
     public Product createProduct(ProductRequest request, String categoryName) {
@@ -34,7 +37,16 @@ public class ProductService {
         newProduct.setIsVisible(true);
         newProduct.setProductStatus(ProductStatus.AVAILABLE);
 
-        return productRepository.save(newProduct);
+        // Sauvegarder le produit d'abord
+        Product savedProduct = productRepository.save(newProduct);
+        
+        // Créer automatiquement le stock si initialStock > 0
+        if (request.initialStock() != null && request.initialStock() > 0) {
+            log.info("Creating initial stock of {} for product {}", request.initialStock(), savedProduct.getName());
+            stockService.createStock(savedProduct, request.initialStock());
+        }
+
+        return savedProduct;
     }
 
     /**

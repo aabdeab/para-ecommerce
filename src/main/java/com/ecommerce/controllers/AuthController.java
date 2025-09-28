@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
 
 @RestController
 @RequestMapping("/auth")
@@ -27,21 +26,14 @@ public class AuthController {
         } else {
             token = authService.registerUser(dto,role);
         }
-        ApiResponse<String> response = ApiResponse.<String>builder()
-                .data(token)
-                .success(true)
-                .timestamp(Instant.now())
-                .build();
+        ApiResponse<String> response = ApiResponse.success(token, "Inscription réussie");
         return ResponseEntity.ok(response) ;
     }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> login(@RequestBody @Valid LoginRequestDTO loginRequest) {
         String token = authService.login(loginRequest);
-        ApiResponse<String> response = ApiResponse.<String>builder()
-                .data(token)
-                .success(true)
-                .timestamp(Instant.now())
-                .build();
+        ApiResponse<String> response = ApiResponse.success(token, "Connexion réussie");
         return ResponseEntity.ok(response);
     }
 }

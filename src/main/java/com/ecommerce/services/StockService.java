@@ -161,4 +161,60 @@ public class StockService {
                 .expiresAt(LocalDateTime.now().plusMinutes(stockReservationExpiryMinutes))
                 .build();
     }
+
+    /**
+     * Clean up expired reservations and restore stock
+     * Should be called periodically by a scheduled task
+     */
+    @Transactional
+    public void cleanupExpiredReservations() {
+        LocalDateTime now = LocalDateTime.now();
+        // Utilisation d'une approche plus simple pour récupérer les réservations expirées
+        List<StockReservation> expiredReservations = stockReservationRepository
+                .findAll().stream()
+                .filter(reservation ->
+                        reservation.getStatus() == ReservationStatus.ACTIVE &&
+                                reservation.getExpiresAt() != null &&
+                                reservation.getExpiresAt().isBefore(now))
+                .collect(Collectors.toList());
+
+        if (!expiredReservations.isEmpty()) {
+            logger.info("Cleaning up " + expiredReservations.size() + " expired reservations");
+            releaseReservations(expiredReservations);
+        }
+    }
+
+    /**
+     * Check if enough stock is available before allowing reservation
+     */
+    public boolean isStockAvailable(Long productId, Integer quantity) {
+        return stockRepository.findByProduct_ProductId(productId)
+                .map(stock -> stock.getAvailableQuantity() >= quantity)
+                .orElse(false);
+    }
+
+    /**
+     * Get available stock quantity for a product
+     */
+    public Integer getAvailableStock(Product product) {
+        return stockRepository.findByProduct_ProductId(product.getProductId())
+                .map(Stock::getAvailableQuantity)
+                .orElse(0);
+    }
+
+    /**
+     * Get stock information for a product
+     */
+    public Stock getStockForProduct(Product product) {
+        return stockRepository.findByProduct_ProductId(product.getProductId())
+                .orElse(null);
+    }
+
+    /**
+     * Update stock information (used by INVENTORY_MANAGER for stock adjustments)
+     */
+    @Transactional
+    public Stock updateStock(Stock stock) {
+        return stockRepository.save(stock);
+    }
 }

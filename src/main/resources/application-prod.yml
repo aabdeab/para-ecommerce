@@ -5,36 +5,69 @@ spring:
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-      idle-timeout: 30000
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
       max-lifetime: 1800000
+      leak-detection-threshold: 60000
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate  # PRODUCTION: validate seulement, jamais update/create
+    show-sql: false       # PRODUCTION: désactiver pour la sécurité
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
+        generate_statistics: false
+        use_sql_comments: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false   # Performance: éviter les lazy loading issues
 
   redis:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}  # SÉCURITÉ: Redis doit être protégé
     timeout: 60000
     lettuce:
       pool:
-        max-active: 10
-        max-idle: 5
-        min-idle: 1
+        max-active: 20
+        max-idle: 8
+        min-idle: 2
         max-wait: 10000
+
+# LOGGING CONFIGURATION FOR PRODUCTION
+logging:
+  level:
+    com.ecommerce: INFO
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    root: WARN
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/ecommerce/application.log
+
+# MONITORING & ACTUATOR
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
 
 ecommerce:
   stock:
     reservation:
       expiry:
         minutes: 30
+  # Configuration notifications PRODUCTION
+  notifications:
+    enabled: true
+    mock: false
+    log-only: false
 
 jwt:
   secret: ${JWT_SECRET}
